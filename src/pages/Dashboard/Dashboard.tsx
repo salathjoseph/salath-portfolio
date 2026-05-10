@@ -8,7 +8,6 @@ import {
   ChevronRight, 
   Clock, 
   CheckCircle2, 
-  AlertCircle 
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
