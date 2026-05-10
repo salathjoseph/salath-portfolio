@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ExternalLink, Code2, Database, Smartphone, BrainCircuit, Coins, X, ChevronRight } from 'lucide-react';
-import { EMAIL_ADDRESS, AI_MENTAL_HEALTH_APP_LINK, PORTFOLIO_LINK, GOLD_CALCULATOR_LINK, MOGRASYS_PROJECTS, MERCEDES_EXPERIENCE, NEXA_EXPERIENCE } from '../type/common';
+import { AI_MENTAL_HEALTH_APP_LINK, EMAIL_ADDRESS, GOLD_CALCULATOR_LINK, MERCEDES_EXPERIENCE, MOGRASYS_PROJECTS, NEXA_EXPERIENCE, PORTFOLIO_LINK } from '../../type/common';
 
 export default function Portfolio() {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);

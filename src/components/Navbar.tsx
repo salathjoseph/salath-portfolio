@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Wallet, Calculator, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Wallet, Calculator, Menu, X, Wand2, TrendingUp, Image as ImageIcon } from 'lucide-react';
 import logoImage from '../assets/logo.png';
 
 export default function Navbar() {
@@ -26,6 +26,9 @@ export default function Navbar() {
     { name: 'Portfolio', path: '/', icon: <LayoutDashboard size={18} /> },
     { name: 'Expenses', path: '/expenses', icon: <Wallet size={18} /> },
     { name: 'EMI Calculator', path: '/emi-calculator', icon: <Calculator size={18} /> },
+    { name: 'Prompt Generator', path: '/prompt-generator', icon: <Wand2 size={18} /> },
+    { name: 'Advanced Image', path: '/advanced-image-prompt', icon: <ImageIcon size={18} /> },
+    { name: 'Financial Platform', path: '/finance', icon: <TrendingUp size={18} /> },
   ];
 
   return (
