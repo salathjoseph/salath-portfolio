@@ -32,6 +32,13 @@ export default function ShowroomModal({
   onClose,
   onDownloadSpecSheet
 }: ShowroomModalProps) {
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const vehicle = TOYOTA_VEHICLES.find(v => v.id === activeShowroomVehicleId);
   const details = TOYOTA_VEHICLE_DETAILS[activeShowroomVehicleId];
   if (!vehicle || !details) return null;
