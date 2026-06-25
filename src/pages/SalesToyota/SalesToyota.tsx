@@ -95,6 +95,12 @@ export default function SalesToyota() {
 
   return (
     <div className="sales-page-container">
+      {/* Brand Logo Bar */}
+      <div className="showroom-logo-bar">
+        <img src={getAssetUrl('krish_toyota_logo.png')} alt="Krish Toyota" className="brand-logo krish-logo" />
+        <img src={getAssetUrl('toyota_logo.png')} alt="Toyota" className="brand-logo toyota-logo" />
+      </div>
+
       {/* Hero Header */}
       <div className="sales-hero">
         <div className="badge-salesperson">
@@ -105,6 +111,11 @@ export default function SalesToyota() {
         <p className="sales-subtitle">
           Explore our exclusive lineup of elite luxury SUVs, high-performance utility trucks, and leading self-charging hybrid vehicles.
         </p>
+        <div className="sales-advisor-info">
+          <span>Consultant: <strong>Salath Joseph</strong></span>
+          <span className="separator">•</span>
+          <span>Call: <a href="tel:+918838032478" className="advisor-link">+91 88380 32478</a></span>
+        </div>
       </div>
 
       {/* Filter and Search Controls */}
@@ -505,16 +516,24 @@ export default function SalesToyota() {
                     <div className="showroom-modal-body">
                       {/* Left Sidebar navigation */}
                       <div className="showroom-tabs-bar">
-                        {Object.entries(tabNames).map(([key, tab]) => (
-                          <button
-                            key={key}
-                            onClick={() => setActiveTab(key)}
-                            className={`showroom-tab-btn ${activeTab === key ? 'active' : ''}`}
-                          >
-                            {tab.icon}
-                            {tab.label}
-                          </button>
-                        ))}
+                        <div className="showroom-tabs-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1, width: '100%' }}>
+                          {Object.entries(tabNames).map(([key, tab]) => (
+                            <button
+                              key={key}
+                              onClick={() => setActiveTab(key)}
+                              className={`showroom-tab-btn ${activeTab === key ? 'active' : ''}`}
+                            >
+                              {tab.icon}
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Advisor Contact Card */}
+                        <div className="showroom-advisor-card">
+                          <div className="advisor-title">Consultant</div>
+                          <div className="advisor-name">Salath Joseph</div>
+                          <a href="tel:+918838032478" className="advisor-phone">+91 88380 32478</a>
+                        </div>
                       </div>
 
                       {/* Right Content Panel */}

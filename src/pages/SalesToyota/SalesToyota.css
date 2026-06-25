@@ -800,3 +800,120 @@
   }
 }
 
+/* Brand Logo Bar styling */
+.showroom-logo-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px 20px 10px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.brand-logo {
+  height: 48px;
+  max-width: 180px;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+}
+
+.brand-logo:hover {
+  opacity: 1;
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .showroom-logo-bar {
+    padding: 10px 5px 15px 5px;
+    margin-bottom: 20px;
+  }
+  .brand-logo {
+    height: 38px;
+    max-width: 140px;
+  }
+}
+
+/* Salesperson Advisor info styling */
+.sales-advisor-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+  padding: 8px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 30px;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.sales-advisor-info .separator {
+  color: var(--toyota-red);
+  font-weight: bold;
+}
+
+.advisor-link {
+  color: #ff5c57;
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.2s ease;
+}
+
+.advisor-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Showroom Modal Sidebar Advisor Card */
+.showroom-advisor-card {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(225, 6, 0, 0.08);
+  border: 1px solid rgba(225, 6, 0, 0.25);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.showroom-advisor-card .advisor-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.showroom-advisor-card .advisor-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.showroom-advisor-card .advisor-phone {
+  font-size: 0.88rem;
+  color: #ff5c57;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.showroom-advisor-card .advisor-phone:hover {
+  text-decoration: underline;
+  color: white;
+}
+
+@media (max-width: 900px) {
+  .showroom-advisor-card {
+    display: none;
+  }
+}
+
+
+
