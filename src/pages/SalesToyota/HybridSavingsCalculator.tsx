@@ -324,7 +324,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart
                       data={yearsData}
-                      margin={{ top: 20, right: 10, left: -10, bottom: 5 }}
+                      margin={{ top: 20, right: 25, left: -10, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                       <XAxis
