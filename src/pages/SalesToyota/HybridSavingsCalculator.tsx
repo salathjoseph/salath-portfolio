@@ -60,7 +60,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
     return `${prefix}${lakhVal.toFixed(2)}L`;
   };
 
-  // Perform computations for Years 1 to 6
+  // Perform computations for Years 1 to 10
   const { yearsData, breakEvenYear, premiumAmount } = useMemo(() => {
     const premium = pricePremiumLakhs * 100000;
     
@@ -72,7 +72,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
     const petrolAnnualCost = petrolAnnualLitres * petrolPrice;
     const hybridAnnualCost = hybridAnnualLitres * petrolPrice;
 
-    const data = [1, 2, 3, 4, 5, 6].map(year => {
+    const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(year => {
       const petrolCost = petrolAnnualCost * year;
       const hybridFuelCost = hybridAnnualCost * year;
       const hybridTotalCost = hybridFuelCost + premium; // upfront premium is treated as initial capital expenditure
@@ -268,15 +268,15 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     </p>
                     <div className="savings-stats-row">
                       <div className="stat-card">
-                        <span className="stat-label">6-Yr Fuel Savings</span>
+                        <span className="stat-label">10-Yr Fuel Savings</span>
                         <span className="stat-val font-mono" style={{ color: '#10b981' }}>
-                          {formatLakhs(yearsData[5].fuelSaved)}
+                          {formatLakhs(yearsData[9].fuelSaved)}
                         </span>
                       </div>
                       <div className="stat-card">
-                        <span className="stat-label">6-Yr Net Profit</span>
+                        <span className="stat-label">10-Yr Net Profit</span>
                         <span className="stat-val font-mono" style={{ color: '#10b981' }}>
-                          {formatLakhs(yearsData[5].netSavings)}
+                          {formatLakhs(yearsData[9].netSavings)}
                         </span>
                       </div>
                     </div>
@@ -284,22 +284,22 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 ) : (
                   <>
                     <h3 className="banner-savings-headline text-gradient-orange">
-                      ℹ️ Break-even occurs after Year 6
+                      ℹ️ Break-even occurs after Year 10
                     </h3>
                     <p className="banner-savings-sub">
-                      Based on driving <strong>{kmPerYear.toLocaleString()} km/year</strong>, cumulative fuel savings do not fully offset the <strong>{formatLakhs(premiumAmount)}</strong> premium within 6 years.
+                      Based on driving <strong>{kmPerYear.toLocaleString()} km/year</strong>, cumulative fuel savings do not fully offset the <strong>{formatLakhs(premiumAmount)}</strong> premium within 10 years.
                     </p>
                     <div className="savings-stats-row">
                       <div className="stat-card">
-                        <span className="stat-label">6-Yr Fuel Savings</span>
+                        <span className="stat-label">10-Yr Fuel Savings</span>
                         <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
-                          {formatLakhs(yearsData[5].fuelSaved)}
+                          {formatLakhs(yearsData[9].fuelSaved)}
                         </span>
                       </div>
                       <div className="stat-card">
                         <span className="stat-label">Remaining Premium</span>
                         <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
-                          {formatLakhs(premiumAmount - yearsData[5].fuelSaved)}
+                          {formatLakhs(premiumAmount - yearsData[9].fuelSaved)}
                         </span>
                       </div>
                     </div>
@@ -381,33 +381,56 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     <thead>
                       <tr>
                         <th>Year</th>
+                        <th>Total KMs Driven</th>
                         <th>Petrol Spend (Fuel)</th>
                         <th>Hybrid Fuel Cost</th>
                         <th>Cumulative Saved</th>
-                        <th>Net Savings (incl. Premium)</th>
+                        <th>True Savings After Premium Cost</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {yearsData.map((row) => {
                         const isBe = row.year === breakEvenYear;
+                        const isNegative = row.netSavings < 0;
+                        const isPaidOff = row.year === breakEvenYear;
                         return (
-                          <tr key={row.year} className={isBe ? 'highlight-be-row' : ''}>
-                            <td className="font-mono" style={{ fontWeight: isBe ? 'bold' : 'normal' }}>
+                          <tr 
+                            key={row.year} 
+                            className={isBe ? 'highlight-be-row' : ''}
+                            style={{ fontWeight: isBe ? 'bold' : 'normal' }}
+                          >
+                            <td className="font-mono">
                               Year {row.year} {isBe && <span className="be-table-badge">Break-even</span>}
+                            </td>
+                            <td className="font-mono" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                              {(kmPerYear * row.year).toLocaleString()} km
                             </td>
                             <td className="font-mono text-orange">{formatLakhs(row.petrolCost)}</td>
                             <td className="font-mono">{formatLakhs(row.hybridFuelCost)}</td>
                             <td className="font-mono text-green" style={{ fontWeight: 'bold' }}>
                               {formatLakhs(row.fuelSaved)}
                             </td>
-                            <td className={`font-mono ${row.netSavings >= 0 ? 'text-green' : 'text-red-dim'}`} style={{ fontWeight: 'bold' }}>
-                              {row.netSavings >= 0 ? '+' : ''}{formatLakhs(row.netSavings)}
+                            <td className={`font-mono ${isNegative ? 'text-red' : 'text-green'}`} style={{ fontWeight: 'bold' }}>
+                              {isNegative ? '▼ ' : '▲ '}{formatLakhs(row.netSavings)}
+                            </td>
+                            <td>
+                              {isNegative ? (
+                                <span className="calc-pill pill-recovering">Still Recovering</span>
+                              ) : isPaidOff ? (
+                                <span className="calc-pill pill-paid-off">✅ Paid Off</span>
+                              ) : (
+                                <span className="calc-pill pill-saving">✅ Saving {formatLakhs(row.netSavings)}</span>
+                              )}
                             </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
+                </div>
+                <div style={{ marginTop: '16px', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                  Based on <strong>{kmPerYear.toLocaleString()} km/year</strong> · <strong>₹{petrolPrice}/L petrol</strong> · <strong>Petrol {petrolMillage} kmpl</strong> · <strong>Hybrid {hybridMillage} kmpl</strong>
                 </div>
               </div>
 
