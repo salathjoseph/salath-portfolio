@@ -1,21 +1,21 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  X, 
-  Calculator, 
-  TrendingUp, 
-  Info, 
+import {
+  X,
+  Calculator,
+  TrendingUp,
+  Info,
   Coins
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
 } from 'recharts';
 
 interface HybridSavingsCalculatorProps {
@@ -63,11 +63,11 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
   // Perform computations for Years 1 to 10
   const { yearsData, breakEvenYear, premiumAmount } = useMemo(() => {
     const premium = pricePremiumLakhs * 100000;
-    
+
     // Annual fuel consumed in Litres
     const petrolAnnualLitres = kmPerYear / petrolMillage;
     const hybridAnnualLitres = kmPerYear / hybridMillage;
-    
+
     // Annual cost in Rupees
     const petrolAnnualCost = petrolAnnualLitres * petrolPrice;
     const hybridAnnualCost = hybridAnnualLitres * petrolPrice;
@@ -107,13 +107,13 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
   if (!isOpen) return null;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="showroom-modal-overlay"
     >
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.96, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 20 }}
@@ -136,7 +136,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
         {/* Modal Body */}
         <div className="showroom-modal-body calculator-modal-body" style={{ overflowY: 'auto', display: 'block', padding: '24px' }}>
           <div className="calculator-grid">
-            
+
             {/* Left inputs panel */}
             <div className="calculator-inputs-panel glass-panel">
               <div className="panel-title-row">
@@ -150,13 +150,13 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                   <label htmlFor="km-driven-slider">Annual Driving distance</label>
                   <span className="value-badge font-mono">{kmPerYear.toLocaleString()} km</span>
                 </div>
-                <input 
+                <input
                   id="km-driven-slider"
-                  type="range" 
-                  min="5000" 
-                  max="60000" 
+                  type="range"
+                  min="5000"
+                  max="60000"
                   step="1000"
-                  value={kmPerYear} 
+                  value={kmPerYear}
                   onChange={(e) => setKmPerYear(parseInt(e.target.value))}
                   className="calculator-slider"
                 />
@@ -175,10 +175,10 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 </div>
                 <div className="input-number-wrapper">
                   <span className="input-prefix">₹</span>
-                  <input 
+                  <input
                     id="petrol-price-input"
-                    type="number" 
-                    value={petrolPrice} 
+                    type="number"
+                    value={petrolPrice}
                     onChange={(e) => setPetrolPrice(Math.max(1, parseFloat(e.target.value) || 0))}
                     className="calculator-number-input font-mono"
                     min="1"
@@ -193,12 +193,12 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     <label htmlFor="petrol-mileage-input">Petrol Mileage</label>
                     <span className="value-badge font-mono">{petrolMillage} kmpl</span>
                   </div>
-                  <input 
+                  <input
                     id="petrol-mileage-input"
-                    type="number" 
-                    min="5" 
+                    type="number"
+                    min="5"
                     max="30"
-                    value={petrolMillage} 
+                    value={petrolMillage}
                     onChange={(e) => setPetrolMillage(Math.max(1, parseFloat(e.target.value) || 0))}
                     className="calculator-number-input font-mono"
                   />
@@ -210,12 +210,12 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     <label htmlFor="hybrid-mileage-input">Hybrid Mileage</label>
                     <span className="value-badge font-mono">{hybridMillage} kmpl</span>
                   </div>
-                  <input 
+                  <input
                     id="hybrid-mileage-input"
-                    type="number" 
-                    min="10" 
+                    type="number"
+                    min="10"
                     max="50"
-                    value={hybridMillage} 
+                    value={hybridMillage}
                     onChange={(e) => setHybridMillage(Math.max(1, parseFloat(e.target.value) || 0))}
                     className="calculator-number-input font-mono"
                   />
@@ -230,12 +230,12 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                   <span className="value-badge font-mono">{formatLakhs(pricePremiumLakhs * 100000)}</span>
                 </div>
                 <div className="input-number-wrapper">
-                  <input 
+                  <input
                     id="price-premium-input"
-                    type="number" 
+                    type="number"
                     step="0.1"
                     min="0"
-                    value={pricePremiumLakhs} 
+                    value={pricePremiumLakhs}
                     onChange={(e) => setPricePremiumLakhs(Math.max(0, parseFloat(e.target.value) || 0))}
                     className="calculator-number-input font-mono"
                     style={{ paddingLeft: '16px' }}
@@ -245,7 +245,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
               </div>
 
               {/* Reset Button */}
-              <button 
+              <button
                 onClick={handleReset}
                 className="btn btn-secondary btn-reset-calc"
               >
@@ -255,7 +255,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
 
             {/* Right output panel */}
             <div className="calculator-results-panel">
-              
+
               {/* Savings Announcement Banner */}
               <div className={`savings-hero-banner ${breakEvenYear ? 'break-even-green' : 'break-even-orange'}`}>
                 {breakEvenYear ? (
@@ -322,25 +322,25 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
 
                 <div className="chart-wrapper">
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart 
-                      data={yearsData} 
+                    <BarChart
+                      data={yearsData}
                       margin={{ top: 20, right: 10, left: -10, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                      <XAxis 
-                        dataKey="yearLabel" 
-                        stroke="rgba(255,255,255,0.4)" 
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} 
-                      />
-                      <YAxis 
-                        stroke="rgba(255,255,255,0.4)" 
+                      <XAxis
+                        dataKey="yearLabel"
+                        stroke="rgba(255,255,255,0.4)"
                         tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                        tickFormatter={(val) => `₹${val}L`} 
                       />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#0f172a', 
-                          border: '1px solid rgba(255,255,255,0.1)', 
+                      <YAxis
+                        stroke="rgba(255,255,255,0.4)"
+                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                        tickFormatter={(val) => `₹${val}L`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#0f172a',
+                          border: '1px solid rgba(255,255,255,0.1)',
                           borderRadius: '12px',
                           color: '#fff'
                         }}
@@ -349,20 +349,20 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                           name
                         ]}
                       />
-                      <Legend 
-                        wrapperStyle={{ paddingTop: '15px', fontSize: '0.85rem' }} 
+                      <Legend
+                        wrapperStyle={{ paddingTop: '15px', fontSize: '0.85rem' }}
                         formatter={(value) => <span style={{ color: 'rgba(255,255,255,0.7)' }}>{value}</span>}
                       />
-                      <Bar 
-                        dataKey="Petrol Fuel Cost" 
-                        fill="#ea580c" 
-                        radius={[6, 6, 0, 0]} 
+                      <Bar
+                        dataKey="Petrol Fuel Cost"
+                        fill="#ea580c"
+                        radius={[6, 6, 0, 0]}
                         name="Petrol Spend"
                       />
-                      <Bar 
-                        dataKey="Hybrid Total Cost (incl. Premium)" 
-                        fill="#10b981" 
-                        radius={[6, 6, 0, 0]} 
+                      <Bar
+                        dataKey="Hybrid Total Cost (incl. Premium)"
+                        fill="#10b981"
+                        radius={[6, 6, 0, 0]}
                         name="Hybrid Total Cost (Fuel + Upfront Premium)"
                       />
                     </BarChart>
@@ -380,13 +380,13 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                   <table className="savings-table">
                     <thead>
                       <tr>
-                        <th>Year</th>
-                        <th>Total KMs Driven</th>
-                        <th>Petrol Spend (Fuel)</th>
-                        <th>Hybrid Fuel Cost</th>
-                        <th>Cumulative Saved</th>
-                        <th>True Savings After Premium Cost</th>
-                        <th>Status</th>
+                        <th style={{ width: '10%' }}>Year</th>
+                        <th style={{ width: '15%' }}>Total KMs Driven</th>
+                        <th style={{ width: '15%' }}>Petrol Spend (Fuel)</th>
+                        <th style={{ width: '15%' }}>Hybrid Fuel Cost</th>
+                        <th style={{ width: '15%' }}>Cumulative Saved</th>
+                        <th style={{ width: '18%' }}>True Savings After Premium Cost</th>
+                        <th style={{ width: '12%' }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -395,8 +395,8 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                         const isNegative = row.netSavings < 0;
                         const isPaidOff = row.year === breakEvenYear;
                         return (
-                          <tr 
-                            key={row.year} 
+                          <tr
+                            key={row.year}
                             className={isBe ? 'highlight-be-row' : ''}
                             style={{ fontWeight: isBe ? 'bold' : 'normal' }}
                           >
@@ -418,9 +418,9 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                               {isNegative ? (
                                 <span className="calc-pill pill-recovering">Still Recovering</span>
                               ) : isPaidOff ? (
-                                <span className="calc-pill pill-paid-off">✅ Paid Off</span>
+                                <span className="calc-pill pill-paid-off">Paid Off</span>
                               ) : (
-                                <span className="calc-pill pill-saving">✅ Saving {formatLakhs(row.netSavings)}</span>
+                                <span className="calc-pill pill-saving">Saving {formatLakhs(row.netSavings)}</span>
                               )}
                             </td>
                           </tr>
