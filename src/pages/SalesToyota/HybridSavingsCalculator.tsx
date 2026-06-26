@@ -38,10 +38,10 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
 
   // Input states with specified defaults
   const [kmPerYear, setKmPerYear] = useState<number>(15000);
-  const [petrolPrice, setPetrolPrice] = useState<number>(108);
-  const [petrolMillage, setPetrolMillage] = useState<number>(11);
-  const [hybridMillage, setHybridMillage] = useState<number>(21);
-  const [pricePremiumLakhs, setPricePremiumLakhs] = useState<number>(4.5);
+  const [petrolPrice, setPetrolPrice] = useState<number | "">(108);
+  const [petrolMillage, setPetrolMillage] = useState<number | "">(11);
+  const [hybridMillage, setHybridMillage] = useState<number | "">(21);
+  const [pricePremiumLakhs, setPricePremiumLakhs] = useState<number | "">(4.5);
 
   // Reset handler
   const handleReset = () => {
@@ -62,15 +62,20 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
 
   // Perform computations for Years 1 to 10
   const { yearsData, breakEvenYear, premiumAmount } = useMemo(() => {
-    const premium = pricePremiumLakhs * 100000;
+    const premium = (pricePremiumLakhs || 0) * 100000;
 
-    // Annual fuel consumed in Litres
-    const petrolAnnualLitres = kmPerYear / petrolMillage;
-    const hybridAnnualLitres = kmPerYear / hybridMillage;
+    // Extract values, treating empty string as 0
+    const petrolMillageVal = petrolMillage || 0;
+    const hybridMillageVal = hybridMillage || 0;
+    const petrolPriceVal = petrolPrice || 0;
+
+    // Annual fuel consumed in Litres - prevent division by zero
+    const petrolAnnualLitres = petrolMillageVal > 0 ? kmPerYear / petrolMillageVal : 0;
+    const hybridAnnualLitres = hybridMillageVal > 0 ? kmPerYear / hybridMillageVal : 0;
 
     // Annual cost in Rupees
-    const petrolAnnualCost = petrolAnnualLitres * petrolPrice;
-    const hybridAnnualCost = hybridAnnualLitres * petrolPrice;
+    const petrolAnnualCost = petrolAnnualLitres * petrolPriceVal;
+    const hybridAnnualCost = hybridAnnualLitres * petrolPriceVal;
 
     const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(year => {
       const petrolCost = petrolAnnualCost * year;
@@ -88,13 +93,13 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
         fuelSaved,
         netSavings,
         // Chart values in Lakhs (numbers for Recharts axis scaling)
-        'Petrol Fuel Cost': parseFloat((petrolCost / 100000).toFixed(2)),
-        'Hybrid Total Cost (incl. Premium)': parseFloat((hybridTotalCost / 100000).toFixed(2))
+        'Petrol Fuel Cost': parseFloat((petrolCost / 100000).toFixed(2)) || 0,
+        'Hybrid Total Cost (incl. Premium)': parseFloat((hybridTotalCost / 100000).toFixed(2)) || 0
       };
     });
 
     // Find first year where fuel saved is greater than or equal to the upfront price premium
-    const foundBreakEven = data.find(d => d.fuelSaved >= premium);
+    const foundBreakEven = premium > 0 ? data.find(d => d.fuelSaved >= premium) : data[0];
     const beYear = foundBreakEven ? foundBreakEven.year : null;
 
     return {
@@ -135,7 +140,9 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
 
         {/* Modal Body */}
         <div className="showroom-modal-body calculator-modal-body" style={{ overflowY: 'auto', display: 'block', padding: '24px' }}>
-          <div className="calculator-grid">
+          
+          {/* TOP SECTION: Two columns side by side (Inputs on left | Break-even summary on right) */}
+          <div className="calculator-top-row">
 
             {/* Left inputs panel */}
             <div className="calculator-inputs-panel glass-panel">
@@ -171,7 +178,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
               <div className="input-group">
                 <div className="input-label-row">
                   <label htmlFor="petrol-price-input">Petrol Price (per Litre)</label>
-                  <span className="value-badge font-mono">₹ {petrolPrice} / L</span>
+                  <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
                 </div>
                 <div className="input-number-wrapper">
                   <span className="input-prefix">₹</span>
@@ -179,9 +186,16 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     id="petrol-price-input"
                     type="number"
                     value={petrolPrice}
-                    onChange={(e) => setPetrolPrice(Math.max(1, parseFloat(e.target.value) || 0))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPetrolPrice(val === "" ? "" : parseFloat(val));
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => {
+                      if (petrolPrice === "") setPetrolPrice(0);
+                    }}
                     className="calculator-number-input font-mono"
-                    min="1"
+                    min="0"
                   />
                 </div>
               </div>
@@ -191,15 +205,22 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 <div className="input-group">
                   <div className="input-label-row">
                     <label htmlFor="petrol-mileage-input">Petrol Mileage</label>
-                    <span className="value-badge font-mono">{petrolMillage} kmpl</span>
+                    <span className="value-badge font-mono">{petrolMillage || 0} kmpl</span>
                   </div>
                   <input
                     id="petrol-mileage-input"
                     type="number"
-                    min="5"
-                    max="30"
+                    min="0"
+                    max="100"
                     value={petrolMillage}
-                    onChange={(e) => setPetrolMillage(Math.max(1, parseFloat(e.target.value) || 0))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPetrolMillage(val === "" ? "" : parseFloat(val));
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => {
+                      if (petrolMillage === "") setPetrolMillage(0);
+                    }}
                     className="calculator-number-input font-mono"
                   />
                   <span className="mileage-tip">Default: 11 kmpl</span>
@@ -208,15 +229,22 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 <div className="input-group">
                   <div className="input-label-row">
                     <label htmlFor="hybrid-mileage-input">Hybrid Mileage</label>
-                    <span className="value-badge font-mono">{hybridMillage} kmpl</span>
+                    <span className="value-badge font-mono">{hybridMillage || 0} kmpl</span>
                   </div>
                   <input
                     id="hybrid-mileage-input"
                     type="number"
-                    min="10"
-                    max="50"
+                    min="0"
+                    max="100"
                     value={hybridMillage}
-                    onChange={(e) => setHybridMillage(Math.max(1, parseFloat(e.target.value) || 0))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setHybridMillage(val === "" ? "" : parseFloat(val));
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => {
+                      if (hybridMillage === "") setHybridMillage(0);
+                    }}
                     className="calculator-number-input font-mono"
                   />
                   <span className="mileage-tip">Default: 21 kmpl</span>
@@ -227,7 +255,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
               <div className="input-group">
                 <div className="input-label-row">
                   <label htmlFor="price-premium-input">Hybrid Price Premium</label>
-                  <span className="value-badge font-mono">{formatLakhs(pricePremiumLakhs * 100000)}</span>
+                  <span className="value-badge font-mono">{formatLakhs((pricePremiumLakhs || 0) * 100000)}</span>
                 </div>
                 <div className="input-number-wrapper">
                   <input
@@ -236,7 +264,14 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     step="0.1"
                     min="0"
                     value={pricePremiumLakhs}
-                    onChange={(e) => setPricePremiumLakhs(Math.max(0, parseFloat(e.target.value) || 0))}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPricePremiumLakhs(val === "" ? "" : parseFloat(val));
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => {
+                      if (pricePremiumLakhs === "") setPricePremiumLakhs(0);
+                    }}
                     className="calculator-number-input font-mono"
                     style={{ paddingLeft: '16px' }}
                   />
@@ -253,190 +288,189 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
               </button>
             </div>
 
-            {/* Right output panel */}
-            <div className="calculator-results-panel">
-
-              {/* Savings Announcement Banner */}
-              <div className={`savings-hero-banner ${breakEvenYear ? 'break-even-green' : 'break-even-orange'}`}>
-                {breakEvenYear ? (
-                  <>
-                    <h3 className="banner-savings-headline text-gradient-green">
-                      🎉 You start saving from Year {breakEvenYear}!
-                    </h3>
-                    <p className="banner-savings-sub">
-                      Cumulative fuel savings will fully offset the upfront <strong>{formatLakhs(premiumAmount)}</strong> hybrid premium in Year {breakEvenYear} of ownership.
-                    </p>
-                    <div className="savings-stats-row">
-                      <div className="stat-card">
-                        <span className="stat-label">10-Yr Fuel Savings</span>
-                        <span className="stat-val font-mono" style={{ color: '#10b981' }}>
-                          {formatLakhs(yearsData[9].fuelSaved)}
-                        </span>
-                      </div>
-                      <div className="stat-card">
-                        <span className="stat-label">10-Yr Net Profit</span>
-                        <span className="stat-val font-mono" style={{ color: '#10b981' }}>
-                          {formatLakhs(yearsData[9].netSavings)}
-                        </span>
-                      </div>
+            {/* Right Break-even summary banner */}
+            <div 
+              className={`savings-hero-banner ${breakEvenYear ? 'break-even-green' : 'break-even-orange'}`}
+              style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}
+            >
+              {breakEvenYear ? (
+                <>
+                  <h3 className="banner-savings-headline text-gradient-green">
+                    🎉 You start saving from Year {breakEvenYear}!
+                  </h3>
+                  <p className="banner-savings-sub">
+                    Cumulative fuel savings will fully offset the upfront <strong>{formatLakhs(premiumAmount)}</strong> hybrid premium in Year {breakEvenYear} of ownership.
+                  </p>
+                  <div className="savings-stats-row">
+                    <div className="stat-card">
+                      <span className="stat-label">10-Yr Fuel Savings</span>
+                      <span className="stat-val font-mono" style={{ color: '#10b981' }}>
+                        {formatLakhs(yearsData[9].fuelSaved)}
+                      </span>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="banner-savings-headline text-gradient-orange">
-                      ℹ️ Break-even occurs after Year 10
-                    </h3>
-                    <p className="banner-savings-sub">
-                      Based on driving <strong>{kmPerYear.toLocaleString()} km/year</strong>, cumulative fuel savings do not fully offset the <strong>{formatLakhs(premiumAmount)}</strong> premium within 10 years.
-                    </p>
-                    <div className="savings-stats-row">
-                      <div className="stat-card">
-                        <span className="stat-label">10-Yr Fuel Savings</span>
-                        <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
-                          {formatLakhs(yearsData[9].fuelSaved)}
-                        </span>
-                      </div>
-                      <div className="stat-card">
-                        <span className="stat-label">Remaining Premium</span>
-                        <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
-                          {formatLakhs(premiumAmount - yearsData[9].fuelSaved)}
-                        </span>
-                      </div>
+                    <div className="stat-card">
+                      <span className="stat-label">10-Yr Net Profit</span>
+                      <span className="stat-val font-mono" style={{ color: '#10b981' }}>
+                        {formatLakhs(yearsData[9].netSavings)}
+                      </span>
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
-                      💡 Tip: Increasing your annual driving distance will speed up your return on investment.
-                    </p>
-                  </>
-                )}
-              </div>
-
-              {/* Chart Visual Section */}
-              <div className="glass-panel chart-card-container">
-                <h4 className="card-section-title">
-                  <TrendingUp size={16} style={{ color: 'var(--toyota-red)', marginRight: '8px' }} />
-                  Cumulative Total Cost Comparison (Fuel + Initial Premium)
-                </h4>
-                <p className="card-section-desc">
-                  Hybrid total cost includes the upfront premium ({formatLakhs(premiumAmount)}). When the green bar is shorter than the red/orange bar, Hybrid wins.
-                </p>
-
-                <div className="chart-wrapper">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart
-                      data={yearsData}
-                      margin={{ top: 20, right: 25, left: -10, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                      <XAxis
-                        dataKey="yearLabel"
-                        stroke="rgba(255,255,255,0.4)"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                      />
-                      <YAxis
-                        stroke="rgba(255,255,255,0.4)"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                        tickFormatter={(val) => `₹${val}L`}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#0f172a',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '12px',
-                          color: '#fff'
-                        }}
-                        formatter={(value: any, name: any) => [
-                          `₹${parseFloat(value).toFixed(2)} Lakhs`,
-                          name
-                        ]}
-                      />
-                      <Legend
-                        wrapperStyle={{ paddingTop: '15px', fontSize: '0.85rem' }}
-                        formatter={(value) => <span style={{ color: 'rgba(255,255,255,0.7)' }}>{value}</span>}
-                      />
-                      <Bar
-                        dataKey="Petrol Fuel Cost"
-                        fill="#ea580c"
-                        radius={[6, 6, 0, 0]}
-                        name="Petrol Spend"
-                      />
-                      <Bar
-                        dataKey="Hybrid Total Cost (incl. Premium)"
-                        fill="#10b981"
-                        radius={[6, 6, 0, 0]}
-                        name="Hybrid Total Cost (Fuel + Upfront Premium)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Tabular Data View */}
-              <div className="glass-panel table-card-container">
-                <h4 className="card-section-title">
-                  <Info size={16} style={{ color: 'var(--toyota-red)', marginRight: '8px' }} />
-                  Financial Analysis Table
-                </h4>
-                <div className="table-wrapper">
-                  <table className="savings-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '10%' }}>Year</th>
-                        <th style={{ width: '15%' }}>Total KMs Driven</th>
-                        <th style={{ width: '15%' }}>Petrol Spend (Fuel)</th>
-                        <th style={{ width: '15%' }}>Hybrid Fuel Cost</th>
-                        <th style={{ width: '15%' }}>Cumulative Saved</th>
-                        <th style={{ width: '18%' }}>True Savings After Premium Cost</th>
-                        <th style={{ width: '12%' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {yearsData.map((row) => {
-                        const isBe = row.year === breakEvenYear;
-                        const isNegative = row.netSavings < 0;
-                        const isPaidOff = row.year === breakEvenYear;
-                        return (
-                          <tr
-                            key={row.year}
-                            className={isBe ? 'highlight-be-row' : ''}
-                            style={{ fontWeight: isBe ? 'bold' : 'normal' }}
-                          >
-                            <td className="font-mono">
-                              Year {row.year} {isBe && <span className="be-table-badge">Break-even</span>}
-                            </td>
-                            <td className="font-mono" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                              {(kmPerYear * row.year).toLocaleString()} km
-                            </td>
-                            <td className="font-mono text-orange">{formatLakhs(row.petrolCost)}</td>
-                            <td className="font-mono">{formatLakhs(row.hybridFuelCost)}</td>
-                            <td className="font-mono text-green" style={{ fontWeight: 'bold' }}>
-                              {formatLakhs(row.fuelSaved)}
-                            </td>
-                            <td className={`font-mono ${isNegative ? 'text-red' : 'text-green'}`} style={{ fontWeight: 'bold' }}>
-                              {isNegative ? '▼ ' : '▲ '}{formatLakhs(row.netSavings)}
-                            </td>
-                            <td>
-                              {isNegative ? (
-                                <span className="calc-pill pill-recovering">Still Recovering</span>
-                              ) : isPaidOff ? (
-                                <span className="calc-pill pill-paid-off">Paid Off</span>
-                              ) : (
-                                <span className="calc-pill pill-saving">Saving {formatLakhs(row.netSavings)}</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ marginTop: '16px', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                  Based on <strong>{kmPerYear.toLocaleString()} km/year</strong> · <strong>₹{petrolPrice}/L petrol</strong> · <strong>Petrol {petrolMillage} kmpl</strong> · <strong>Hybrid {hybridMillage} kmpl</strong>
-                </div>
-              </div>
-
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="banner-savings-headline text-gradient-orange">
+                    ℹ️ Break-even occurs after Year 10
+                  </h3>
+                  <p className="banner-savings-sub">
+                    Based on driving <strong>{kmPerYear.toLocaleString()} km/year</strong>, cumulative fuel savings do not fully offset the <strong>{formatLakhs(premiumAmount)}</strong> premium within 10 years.
+                  </p>
+                  <div className="savings-stats-row">
+                    <div className="stat-card">
+                      <span className="stat-label">10-Yr Fuel Savings</span>
+                      <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
+                        {formatLakhs(yearsData[9].fuelSaved)}
+                      </span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-label">Remaining Premium</span>
+                      <span className="stat-val font-mono" style={{ color: '#ef4444' }}>
+                        {formatLakhs(premiumAmount - yearsData[9].fuelSaved)}
+                      </span>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
+                    💡 Tip: Increasing your annual driving distance will speed up your return on investment.
+                  </p>
+                </>
+              )}
             </div>
 
           </div>
+
+          {/* BOTTOM SECTION: Bar chart — full width */}
+          <div className="glass-panel chart-card-container" style={{ marginTop: '24px' }}>
+            <h4 className="card-section-title">
+              <TrendingUp size={16} style={{ color: 'var(--toyota-red)', marginRight: '8px' }} />
+              Cumulative Total Cost Comparison (Fuel + Initial Premium)
+            </h4>
+            <p className="card-section-desc">
+              Hybrid total cost includes the upfront premium ({formatLakhs(premiumAmount)}). When the green bar is shorter than the red/orange bar, Hybrid wins.
+            </p>
+
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={yearsData}
+                  margin={{ top: 20, right: 25, left: -10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                  <XAxis
+                    dataKey="yearLabel"
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                  />
+                  <YAxis
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                    tickFormatter={(val) => `₹${val}L`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#0f172a',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      color: '#fff'
+                    }}
+                    formatter={(value: any, name: any) => [
+                      `₹${parseFloat(value).toFixed(2)} Lakhs`,
+                      name
+                    ]}
+                  />
+                  <Legend
+                    wrapperStyle={{ paddingTop: '15px', fontSize: '0.85rem' }}
+                    formatter={(value) => <span style={{ color: 'rgba(255,255,255,0.7)' }}>{value}</span>}
+                  />
+                  <Bar
+                    dataKey="Petrol Fuel Cost"
+                    fill="#ea580c"
+                    radius={[6, 6, 0, 0]}
+                    name="Petrol Spend"
+                  />
+                  <Bar
+                    dataKey="Hybrid Total Cost (incl. Premium)"
+                    fill="#10b981"
+                    radius={[6, 6, 0, 0]}
+                    name="Hybrid Total Cost (Fuel + Upfront Premium)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* LAST SECTION: Financial Analysis Table — full width (spanning both columns) */}
+          <div className="glass-panel table-card-container" style={{ marginTop: '24px' }}>
+            <h4 className="card-section-title">
+              <Info size={16} style={{ color: 'var(--toyota-red)', marginRight: '8px' }} />
+              Financial Analysis Table
+            </h4>
+            <div className="table-wrapper">
+              <table className="savings-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '14.28%' }}>Year</th>
+                    <th style={{ width: '14.28%' }}>Total KMs</th>
+                    <th style={{ width: '14.28%' }}>Petrol Spend</th>
+                    <th style={{ width: '14.28%' }}>Hybrid Fuel Cost</th>
+                    <th style={{ width: '14.28%' }}>Cumulative Saved</th>
+                    <th style={{ width: '14.28%' }}>True Savings After Premium</th>
+                    <th style={{ width: '14.28%' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearsData.map((row) => {
+                    const isBe = row.year === breakEvenYear;
+                    const isNegative = row.netSavings < 0;
+                    const isPaidOff = row.year === breakEvenYear;
+                    return (
+                      <tr
+                        key={row.year}
+                        className={isBe ? 'highlight-be-row' : ''}
+                        style={{ fontWeight: isBe ? 'bold' : 'normal' }}
+                      >
+                        <td className="font-mono">
+                          Year {row.year} {isBe && <span className="be-table-badge">Break-even</span>}
+                        </td>
+                        <td className="font-mono" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                          {(kmPerYear * row.year).toLocaleString()} km
+                        </td>
+                        <td className="font-mono text-orange">{formatLakhs(row.petrolCost)}</td>
+                        <td className="font-mono">{formatLakhs(row.hybridFuelCost)}</td>
+                        <td className="font-mono text-green" style={{ fontWeight: 'bold' }}>
+                          {formatLakhs(row.fuelSaved)}
+                        </td>
+                        <td className={`font-mono ${isNegative ? 'text-red' : 'text-green'}`} style={{ fontWeight: 'bold' }}>
+                          {isNegative ? '▼ ' : '▲ '}{formatLakhs(row.netSavings)}
+                        </td>
+                        <td>
+                          {isNegative ? (
+                            <span className="calc-pill pill-recovering">Still Recovering</span>
+                          ) : isPaidOff ? (
+                            <span className="calc-pill pill-paid-off">Paid Off</span>
+                          ) : (
+                            <span className="calc-pill pill-saving">Saving {formatLakhs(row.netSavings)}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ marginTop: '16px', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+              Based on <strong>{kmPerYear.toLocaleString()} km/year</strong> · <strong>₹{petrolPrice || 0}/L petrol</strong> · <strong>Petrol {petrolMillage || 0} kmpl</strong> · <strong>Hybrid {hybridMillage || 0} kmpl</strong>
+            </div>
+          </div>
+
         </div>
       </motion.div>
     </motion.div>
