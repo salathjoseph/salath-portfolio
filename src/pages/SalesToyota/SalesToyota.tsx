@@ -9,11 +9,13 @@ import {
   Zap, 
   Fuel,
   GitCompare,
-  ShieldCheck
+  ShieldCheck,
+  Calculator
 } from 'lucide-react';
 import { TOYOTA_VEHICLES } from './toyotaData';
 import ShowroomModal from './ShowroomModal';
 import CompareModal from './CompareModal';
+import HybridSavingsCalculator from './HybridSavingsCalculator';
 import { downloadSpecSheet } from './pdfGenerator';
 import './SalesToyota.css';
 
@@ -24,6 +26,7 @@ export default function SalesToyota() {
   const [isCompareOpen, setIsCompareOpen] = useState<boolean>(false);
   const [activeShowroomVehicleId, setActiveShowroomVehicleId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState<boolean>(false);
 
   const toggleCompare = (vehicleId: string) => {
     setSelectedCompareIds(prev => {
@@ -107,6 +110,39 @@ export default function SalesToyota() {
           <span>Consultant: <strong>Salath Joseph</strong></span>
           <span className="separator">•</span>
           <span>Call: <a href="tel:+918838032478" className="advisor-link">+91 88380 32478</a></span>
+        </div>
+        <div style={{ marginTop: '20px' }}>
+          <button 
+            onClick={() => setIsCalculatorOpen(true)}
+            className="btn btn-primary"
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              padding: '12px 24px', 
+              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+              border: 'none',
+              borderRadius: '30px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              color: '#0b0f19',
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.25)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-main)'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 24px rgba(16, 185, 129, 0.4)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(16, 185, 129, 0.25)';
+            }}
+          >
+            <Calculator size={18} />
+            Hybrid Savings Calculator
+          </button>
         </div>
       </div>
 
@@ -374,6 +410,16 @@ export default function SalesToyota() {
             setActiveTab={setActiveTab}
             onClose={() => setActiveShowroomVehicleId(null)}
             onDownloadSpecSheet={(id) => downloadSpecSheet(id, getAssetUrl)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Hybrid Savings Calculator Modal */}
+      <AnimatePresence>
+        {isCalculatorOpen && (
+          <HybridSavingsCalculator 
+            isOpen={isCalculatorOpen}
+            onClose={() => setIsCalculatorOpen(false)}
           />
         )}
       </AnimatePresence>
