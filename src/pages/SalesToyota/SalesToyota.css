@@ -986,6 +986,7 @@
   font-size: 0.8rem;
   color: #ff5c57;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .calculator-slider {

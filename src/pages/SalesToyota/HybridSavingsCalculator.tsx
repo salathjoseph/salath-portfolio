@@ -286,56 +286,55 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 </>
               ) : (
                 <>
-                  {/* Inputs: Diesel Price & Petrol Price (for Hybrid) side-by-side */}
-                  <div className="mileage-grid">
-                    <div className="input-group">
-                      <div className="input-label-row">
-                        <label htmlFor="diesel-price-input">Diesel Price</label>
-                        <span className="value-badge font-mono">₹ {dieselPrice || 0} / L</span>
-                      </div>
-                      <div className="input-number-wrapper">
-                        <span className="input-prefix">₹</span>
-                        <input
-                          id="diesel-price-input"
-                          type="number"
-                          value={dieselPrice}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setDieselPrice(val === "" ? "" : parseFloat(val));
-                          }}
-                          onFocus={(e) => e.target.select()}
-                          onBlur={() => {
-                            if (dieselPrice === "") setDieselPrice(0);
-                          }}
-                          className="calculator-number-input font-mono"
-                          min="0"
-                        />
-                      </div>
+                  {/* Input: Diesel Price */}
+                  <div className="input-group">
+                    <div className="input-label-row">
+                      <label htmlFor="diesel-price-input">Diesel Price (per Litre)</label>
+                      <span className="value-badge font-mono">₹ {dieselPrice || 0} / L</span>
                     </div>
+                    <div className="input-number-wrapper">
+                      <span className="input-prefix">₹</span>
+                      <input
+                        id="diesel-price-input"
+                        type="number"
+                        value={dieselPrice}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setDieselPrice(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (dieselPrice === "") setDieselPrice(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                        min="0"
+                      />
+                    </div>
+                  </div>
 
-                    <div className="input-group">
-                      <div className="input-label-row">
-                        <label htmlFor="petrol-price-hybrid-input">Petrol Price (Hybrid)</label>
-                        <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
-                      </div>
-                      <div className="input-number-wrapper">
-                        <span className="input-prefix">₹</span>
-                        <input
-                          id="petrol-price-hybrid-input"
-                          type="number"
-                          value={petrolPrice}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setPetrolPrice(val === "" ? "" : parseFloat(val));
-                          }}
-                          onFocus={(e) => e.target.select()}
-                          onBlur={() => {
-                            if (petrolPrice === "") setPetrolPrice(0);
-                          }}
-                          className="calculator-number-input font-mono"
-                          min="0"
-                        />
-                      </div>
+                  {/* Input: Petrol Price (for Hybrid) */}
+                  <div className="input-group">
+                    <div className="input-label-row">
+                      <label htmlFor="petrol-price-hybrid-input">Petrol Price (Hybrid - per Litre)</label>
+                      <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
+                    </div>
+                    <div className="input-number-wrapper">
+                      <span className="input-prefix">₹</span>
+                      <input
+                        id="petrol-price-hybrid-input"
+                        type="number"
+                        value={petrolPrice}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPetrolPrice(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (petrolPrice === "") setPetrolPrice(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                        min="0"
+                      />
                     </div>
                   </div>
 
