@@ -578,7 +578,10 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                         style={{ fontWeight: isBe ? 'bold' : 'normal' }}
                       >
                         <td className="font-mono">
-                          Year {row.year} {isBe && <span className="be-table-badge">Break-even</span>}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
+                            <span>Year {row.year}</span>
+                            {isBe && <span className="be-table-badge">Break-even</span>}
+                          </div>
                         </td>
                         <td className="font-mono" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                           {(kmPerYear * row.year).toLocaleString()} km
