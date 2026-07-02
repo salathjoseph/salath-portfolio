@@ -37,17 +37,23 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
   }, [isOpen]);
 
   // Input states with specified defaults
+  const [comparisonType, setComparisonType] = useState<'petrol' | 'diesel'>('petrol');
   const [kmPerYear, setKmPerYear] = useState<number>(15000);
   const [petrolPrice, setPetrolPrice] = useState<number | "">(108);
   const [petrolMillage, setPetrolMillage] = useState<number | "">(11);
+  const [dieselPrice, setDieselPrice] = useState<number | "">(94);
+  const [dieselMillage, setDieselMillage] = useState<number | "">(12);
   const [hybridMillage, setHybridMillage] = useState<number | "">(21);
   const [pricePremiumLakhs, setPricePremiumLakhs] = useState<number | "">(4.5);
 
   // Reset handler
   const handleReset = () => {
+    setComparisonType('petrol');
     setKmPerYear(15000);
     setPetrolPrice(108);
     setPetrolMillage(11);
+    setDieselPrice(94);
+    setDieselMillage(12);
     setHybridMillage(21);
     setPricePremiumLakhs(4.5);
   };
@@ -61,39 +67,42 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
   };
 
   // Perform computations for Years 1 to 10
-  const { yearsData, breakEvenYear, premiumAmount } = useMemo(() => {
+  const { yearsData, breakEvenYear, premiumAmount, comparisonLabel } = useMemo(() => {
     const premium = (pricePremiumLakhs || 0) * 100000;
 
-    // Extract values, treating empty string as 0
-    const petrolMillageVal = petrolMillage || 0;
-    const hybridMillageVal = hybridMillage || 0;
+    // Extract active comparison fuel parameters based on selected comparison type
+    const compFuelPriceVal = comparisonType === 'petrol' ? (petrolPrice || 0) : (dieselPrice || 0);
+    const compFuelMillageVal = comparisonType === 'petrol' ? (petrolMillage || 0) : (dieselMillage || 0);
+    const compLabel = comparisonType === 'petrol' ? 'Petrol' : 'Diesel';
+
     const petrolPriceVal = petrolPrice || 0;
+    const hybridMillageVal = hybridMillage || 0;
 
     // Annual fuel consumed in Litres - prevent division by zero
-    const petrolAnnualLitres = petrolMillageVal > 0 ? kmPerYear / petrolMillageVal : 0;
+    const compAnnualLitres = compFuelMillageVal > 0 ? kmPerYear / compFuelMillageVal : 0;
     const hybridAnnualLitres = hybridMillageVal > 0 ? kmPerYear / hybridMillageVal : 0;
 
-    // Annual cost in Rupees
-    const petrolAnnualCost = petrolAnnualLitres * petrolPriceVal;
+    // Annual cost in Rupees (Hybrid always uses petrolPriceVal)
+    const compAnnualCost = compAnnualLitres * compFuelPriceVal;
     const hybridAnnualCost = hybridAnnualLitres * petrolPriceVal;
 
     const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(year => {
-      const petrolCost = petrolAnnualCost * year;
+      const compCost = compAnnualCost * year;
       const hybridFuelCost = hybridAnnualCost * year;
       const hybridTotalCost = hybridFuelCost + premium; // upfront premium is treated as initial capital expenditure
-      const fuelSaved = petrolCost - hybridFuelCost;
+      const fuelSaved = compCost - hybridFuelCost;
       const netSavings = fuelSaved - premium;
 
       return {
         year,
         yearLabel: `Yr ${year}`,
-        petrolCost,
+        compCost,
         hybridFuelCost,
         hybridTotalCost,
         fuelSaved,
         netSavings,
         // Chart values in Lakhs (numbers for Recharts axis scaling)
-        'Petrol Fuel Cost': parseFloat((petrolCost / 100000).toFixed(2)) || 0,
+        'Comparison Fuel Cost': parseFloat((compCost / 100000).toFixed(2)) || 0,
         'Hybrid Total Cost (incl. Premium)': parseFloat((hybridTotalCost / 100000).toFixed(2)) || 0
       };
     });
@@ -105,9 +114,10 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
     return {
       yearsData: data,
       breakEvenYear: beYear,
-      premiumAmount: premium
+      premiumAmount: premium,
+      comparisonLabel: compLabel
     };
-  }, [kmPerYear, petrolPrice, petrolMillage, hybridMillage, pricePremiumLakhs]);
+  }, [comparisonType, kmPerYear, petrolPrice, petrolMillage, dieselPrice, dieselMillage, hybridMillage, pricePremiumLakhs]);
 
   if (!isOpen) return null;
 
@@ -151,6 +161,27 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 <h3>Driving & Cost Inputs</h3>
               </div>
 
+              {/* Compare Fuel Toggle selector */}
+              <div className="input-group">
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Compare Hybrid with:</label>
+                <div className="fuel-type-toggle-bar">
+                  <button
+                    type="button"
+                    onClick={() => setComparisonType('petrol')}
+                    className={`fuel-type-btn ${comparisonType === 'petrol' ? 'active' : ''}`}
+                  >
+                    Petrol Car
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComparisonType('diesel')}
+                    className={`fuel-type-btn ${comparisonType === 'diesel' ? 'active' : ''}`}
+                  >
+                    Diesel Car
+                  </button>
+                </div>
+              </div>
+
               {/* Input: Km driven per year */}
               <div className="input-group">
                 <div className="input-label-row">
@@ -174,82 +205,192 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                 </div>
               </div>
 
-              {/* Input: Petrol Price */}
-              <div className="input-group">
-                <div className="input-label-row">
-                  <label htmlFor="petrol-price-input">Petrol Price (per Litre)</label>
-                  <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
-                </div>
-                <div className="input-number-wrapper">
-                  <span className="input-prefix">₹</span>
-                  <input
-                    id="petrol-price-input"
-                    type="number"
-                    value={petrolPrice}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setPetrolPrice(val === "" ? "" : parseFloat(val));
-                    }}
-                    onFocus={(e) => e.target.select()}
-                    onBlur={() => {
-                      if (petrolPrice === "") setPetrolPrice(0);
-                    }}
-                    className="calculator-number-input font-mono"
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              {/* Input: Mileage grid */}
-              <div className="mileage-grid">
-                <div className="input-group">
-                  <div className="input-label-row">
-                    <label htmlFor="petrol-mileage-input">Petrol Mileage</label>
-                    <span className="value-badge font-mono">{petrolMillage || 0} kmpl</span>
+              {comparisonType === 'petrol' ? (
+                <>
+                  {/* Input: Petrol Price */}
+                  <div className="input-group">
+                    <div className="input-label-row">
+                      <label htmlFor="petrol-price-input">Petrol Price (per Litre)</label>
+                      <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
+                    </div>
+                    <div className="input-number-wrapper">
+                      <span className="input-prefix">₹</span>
+                      <input
+                        id="petrol-price-input"
+                        type="number"
+                        value={petrolPrice}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPetrolPrice(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (petrolPrice === "") setPetrolPrice(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                        min="0"
+                      />
+                    </div>
                   </div>
-                  <input
-                    id="petrol-mileage-input"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={petrolMillage}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setPetrolMillage(val === "" ? "" : parseFloat(val));
-                    }}
-                    onFocus={(e) => e.target.select()}
-                    onBlur={() => {
-                      if (petrolMillage === "") setPetrolMillage(0);
-                    }}
-                    className="calculator-number-input font-mono"
-                  />
-                  <span className="mileage-tip">Default: 11 kmpl</span>
-                </div>
 
-                <div className="input-group">
-                  <div className="input-label-row">
-                    <label htmlFor="hybrid-mileage-input">Hybrid Mileage</label>
-                    <span className="value-badge font-mono">{hybridMillage || 0} kmpl</span>
+                  {/* Input: Mileage grid */}
+                  <div className="mileage-grid">
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="petrol-mileage-input">Petrol Mileage</label>
+                        <span className="value-badge font-mono">{petrolMillage || 0} kmpl</span>
+                      </div>
+                      <input
+                        id="petrol-mileage-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={petrolMillage}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPetrolMillage(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (petrolMillage === "") setPetrolMillage(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                      />
+                      <span className="mileage-tip">Default: 11 kmpl</span>
+                    </div>
+
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="hybrid-mileage-input">Hybrid Mileage</label>
+                        <span className="value-badge font-mono">{hybridMillage || 0} kmpl</span>
+                      </div>
+                      <input
+                        id="hybrid-mileage-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={hybridMillage}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setHybridMillage(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (hybridMillage === "") setHybridMillage(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                      />
+                      <span className="mileage-tip">Default: 21 kmpl</span>
+                    </div>
                   </div>
-                  <input
-                    id="hybrid-mileage-input"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={hybridMillage}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setHybridMillage(val === "" ? "" : parseFloat(val));
-                    }}
-                    onFocus={(e) => e.target.select()}
-                    onBlur={() => {
-                      if (hybridMillage === "") setHybridMillage(0);
-                    }}
-                    className="calculator-number-input font-mono"
-                  />
-                  <span className="mileage-tip">Default: 21 kmpl</span>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  {/* Inputs: Diesel Price & Petrol Price (for Hybrid) side-by-side */}
+                  <div className="mileage-grid">
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="diesel-price-input">Diesel Price</label>
+                        <span className="value-badge font-mono">₹ {dieselPrice || 0} / L</span>
+                      </div>
+                      <div className="input-number-wrapper">
+                        <span className="input-prefix">₹</span>
+                        <input
+                          id="diesel-price-input"
+                          type="number"
+                          value={dieselPrice}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setDieselPrice(val === "" ? "" : parseFloat(val));
+                          }}
+                          onFocus={(e) => e.target.select()}
+                          onBlur={() => {
+                            if (dieselPrice === "") setDieselPrice(0);
+                          }}
+                          className="calculator-number-input font-mono"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="petrol-price-hybrid-input">Petrol Price (Hybrid)</label>
+                        <span className="value-badge font-mono">₹ {petrolPrice || 0} / L</span>
+                      </div>
+                      <div className="input-number-wrapper">
+                        <span className="input-prefix">₹</span>
+                        <input
+                          id="petrol-price-hybrid-input"
+                          type="number"
+                          value={petrolPrice}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPetrolPrice(val === "" ? "" : parseFloat(val));
+                          }}
+                          onFocus={(e) => e.target.select()}
+                          onBlur={() => {
+                            if (petrolPrice === "") setPetrolPrice(0);
+                          }}
+                          className="calculator-number-input font-mono"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Input: Mileage grid for Diesel */}
+                  <div className="mileage-grid">
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="diesel-mileage-input">Diesel Mileage</label>
+                        <span className="value-badge font-mono">{dieselMillage || 0} kmpl</span>
+                      </div>
+                      <input
+                        id="diesel-mileage-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={dieselMillage}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setDieselMillage(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (dieselMillage === "") setDieselMillage(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                      />
+                      <span className="mileage-tip">Default: 12 kmpl</span>
+                    </div>
+
+                    <div className="input-group">
+                      <div className="input-label-row">
+                        <label htmlFor="hybrid-mileage-input">Hybrid Mileage</label>
+                        <span className="value-badge font-mono">{hybridMillage || 0} kmpl</span>
+                      </div>
+                      <input
+                        id="hybrid-mileage-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={hybridMillage}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setHybridMillage(val === "" ? "" : parseFloat(val));
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={() => {
+                          if (hybridMillage === "") setHybridMillage(0);
+                        }}
+                        className="calculator-number-input font-mono"
+                      />
+                      <span className="mileage-tip">Default: 21 kmpl</span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Input: Price Difference */}
               <div className="input-group">
@@ -391,10 +532,10 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                     formatter={(value) => <span style={{ color: 'rgba(255,255,255,0.7)' }}>{value}</span>}
                   />
                   <Bar
-                    dataKey="Petrol Fuel Cost"
+                    dataKey="Comparison Fuel Cost"
                     fill="#ea580c"
                     radius={[6, 6, 0, 0]}
-                    name="Petrol Spend"
+                    name={`${comparisonLabel} Spend`}
                   />
                   <Bar
                     dataKey="Hybrid Total Cost (incl. Premium)"
@@ -419,7 +560,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                   <tr>
                     <th style={{ width: '14.28%' }}>Year</th>
                     <th style={{ width: '14.28%' }}>Total KMs</th>
-                    <th style={{ width: '14.28%' }}>Petrol Spend</th>
+                    <th style={{ width: '14.28%' }}>{comparisonLabel} Spend</th>
                     <th style={{ width: '14.28%' }}>Hybrid Fuel Cost</th>
                     <th style={{ width: '14.28%' }}>Cumulative Saved</th>
                     <th style={{ width: '14.28%' }}>True Savings After Premium</th>
@@ -443,7 +584,7 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
                         <td className="font-mono" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                           {(kmPerYear * row.year).toLocaleString()} km
                         </td>
-                        <td className="font-mono text-orange">{formatLakhs(row.petrolCost)}</td>
+                        <td className="font-mono text-orange">{formatLakhs(row.compCost)}</td>
                         <td className="font-mono">{formatLakhs(row.hybridFuelCost)}</td>
                         <td className="font-mono text-green" style={{ fontWeight: 'bold' }}>
                           {formatLakhs(row.fuelSaved)}
@@ -467,7 +608,17 @@ export default function HybridSavingsCalculator({ isOpen, onClose }: HybridSavin
               </table>
             </div>
             <div style={{ marginTop: '16px', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-              Based on <strong>{kmPerYear.toLocaleString()} km/year</strong> · <strong>₹{petrolPrice || 0}/L petrol</strong> · <strong>Petrol {petrolMillage || 0} kmpl</strong> · <strong>Hybrid {hybridMillage || 0} kmpl</strong>
+              Based on <strong>{kmPerYear.toLocaleString()} km/year</strong> ·{' '}
+              {comparisonType === 'petrol' ? (
+                <>
+                  <strong>₹{petrolPrice || 0}/L petrol</strong> · <strong>Petrol {petrolMillage || 0} kmpl</strong>
+                </>
+              ) : (
+                <>
+                  <strong>₹{dieselPrice || 0}/L diesel</strong> · <strong>₹{petrolPrice || 0}/L petrol (Hybrid)</strong> · <strong>Diesel {dieselMillage || 0} kmpl</strong>
+                </>
+              )}{' '}
+              · <strong>Hybrid {hybridMillage || 0} kmpl</strong>
             </div>
           </div>
 

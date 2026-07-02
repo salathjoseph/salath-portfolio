@@ -1328,6 +1328,40 @@
   color: #34d399 !important;
 }
 
+.fuel-type-toggle-bar {
+  display: flex;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.fuel-type-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fuel-type-btn.active {
+  background: var(--toyota-red);
+  color: white;
+  box-shadow: 0 4px 12px var(--toyota-red-glow);
+}
+
+.fuel-type-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 /* Responsive adjustments */
 @media (max-width: 850px) {
   .calculator-top-row {
